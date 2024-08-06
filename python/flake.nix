@@ -1,21 +1,17 @@
 {
-  description = "A MindWM-Manager service implemented in Python";
+  description = "A MindWM knfunc for event processing";
 
   inputs = {
     #nixpkgs.url = "github:nixos/nixpkgs/24.05";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    neomodel-py.url = "github:omgbebebe/neomodel.py-nix";
-    neomodel-py.inputs.nixpkgs.follows = "nixpkgs";
-    parliament-py.url = "github:omgbebebe/parliament.py-nix";
-    parliament-py.inputs.nixpkgs.follows = "nixpkgs";
-    mindwm-sdk-python.url = "github:omgbebebe/mindwm-sdk-python";
+    mindwm-sdk-python.url = "github:omgbebebe/mindwm-sdk-python-ng";
     mindwm-sdk-python.inputs.nixpkgs.follows = "nixpkgs";
     devshell.url = "github:numtide/devshell/main";
     devshell.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ flake-parts, nixpkgs, ... }:
+  outputs = inputs@{ flake-parts, nixpkgs, mindwm-sdk-python, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         inputs.devshell.flakeModule
@@ -24,13 +20,7 @@
       perSystem = { config, self', inputs', pkgs, system, ... }:
       let
         my_python = pkgs.python3.withPackages (ps: with ps; [
-          inputs.neomodel-py.packages.${system}.default
-          inputs.parliament-py.packages.${system}.default
-          inputs.mindwm-sdk-python.packages.${system}.default
-          pydantic dateutil urllib3
-          opentelemetry-sdk opentelemetry-exporter-otlp
-          neo4j
-          pyyaml
+          mindwm-sdk-python.packages.${system}.default
         ]);
         project = pkgs.callPackage ./package.nix {
           my_python = my_python;
@@ -45,7 +35,7 @@
         packages.default = project;
         packages.docker = dockerImage;
         devshells.default = {
-            env = [];
+            env = [ ];
             commands = [
             { help = "build an OCI container";
               name = "build";
@@ -82,7 +72,22 @@
               name = "build_and_deploy";
               command = "build && push && render && deploy";
             }
+            { help = "serve knfunc locally";
+              name = "serve";
+              command = "${project}/bin/mindwm-knfunc";
+            }
+            { help = "source .env.sample";
+              name = "sample_env";
+              command = "set -a && source .env.sample && set +a";
+            }
+            { help = "run test_func";
+              name = "test";
+              command = "python ./src/knfunc/test_func.py";
+            }
             ];
+            devshell.startup.pypath = pkgs.lib.noDepEntry ''
+              export PYTHONPATH="$PYTHONPATH:./src"
+            '';
             packages = [
               my_python
             ] ++ (with pkgs; [
