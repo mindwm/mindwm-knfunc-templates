@@ -5,7 +5,7 @@
     #nixpkgs.url = "github:nixos/nixpkgs/24.05";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
-    mindwm-sdk-python.url = "github:omgbebebe/mindwm-sdk-python-ng";
+    mindwm-sdk-python.url = "github:mindwm/mindwm-sdk-python-ng";
     mindwm-sdk-python.inputs.nixpkgs.follows = "nixpkgs";
     devshell.url = "github:numtide/devshell/main";
     devshell.inputs.nixpkgs.follows = "nixpkgs";
