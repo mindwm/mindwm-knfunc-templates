@@ -7,7 +7,7 @@ To prepare new knfunc project in Python use [nix package manager](https://nixos.
 ```sh
 mkdit my-knfunc
 cd my-knfunc
-nix flake init -t github:mindwm/mindwm-knfunc-templates#python
+nix flake init --refresh -t github:mindwm/mindwm-knfunc-templates#python
 nix develop
 # or `direnv allow` in case you are a direnv user
 ```
