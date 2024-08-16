@@ -1,33 +1,37 @@
-from mindwm import logger, logging
+from mindwm import logging
 from mindwm.model.events import IoDocument
-import mindwm.model.graph as g
-from mindwm.knfunc import iodocument_event, app
+from mindwm.knfunc.decorators import iodoc, app
 
-@iodocument_event
-def func(
+logger = logging.getLogger(__name__)
+
+@iodoc
+async def func(
         iodocument: IoDocument,
+        graph, 
         uuid: str,
         username: str,
         hostname: str,
         socket_path: str,
-        tmux_session: str,
-        tmux_pane: str):
+        session_id: str,
+        pane_title: str):
 
-    user = g.User(username=username).merge()
-    host = g.Host(hostname=hostname).merge()
-    tmux = g.Tmux(socket_path=socket_path).merge()
-    sess = g.TmuxSession(name=tmux_session).merge()
-    pane = g.TmuxPane(title=tmux_pane).merge()
-    iodoc = g.IoDocument(
+    user = graph.User(username=username).merge()
+    host = graph.Host(hostname=hostname).merge()
+    tmux = graph.Tmux(socket_path=socket_path).merge()
+    sess = graph.TmuxSession(name=session_id).merge()
+    pane = graph.TmuxPane(title=pane_title).merge()
+    iodoc = graph.IoDocument(
             uuid=uuid,
             input=iodocument.input,
             output=iodocument.output,
             ps1=iodocument.ps1
-        ).merge()
-    g.UserHasHost(source=user, target=host).merge()
-    g.HostHasTmux(source=host, target=tmux).merge()
-    g.TmuxHasTmuxSession(source=tmux, target=sess).merge()
-    g.TmuxSessionHasTmuxPane(source=sess, target=pane).merge()
-    g.TmuxPaneHasIoDocument(source=pane, target=iodoc).merge()
+        ).create()
+    graph.UserHasHost(source=user, target=host).merge()
+    graph.HostHasTmux(source=host, target=tmux).merge()
+    graph.TmuxHasTmuxSession(source=tmux, target=sess).merge()
+    graph.UserHasTmux(source=user, target=tmux).merge()
+    graph.TmuxSessionHasTmuxPane(source=sess, target=pane).merge()
+    graph.TmuxPaneHasIoDocument(source=pane, target=iodoc).merge()
+    graph.IoDocumentHasUser(source=iodoc, target=user).merge()
 
-    logger.debug(iodoc)
+    logger.info(iodoc)

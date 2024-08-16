@@ -1,8 +1,10 @@
 import asyncio
 import uvicorn
+import os
 
 async def serve():
-    config = uvicorn.Config("knfunc.func:app", port=8080, log_level="info")
+    port=os.getenv("PORT", 8080)
+    config = uvicorn.Config("knfunc.func:app", host="0.0.0.0", port=int(port), log_level="info")
     server = uvicorn.Server(config)
     await server.serve()
 

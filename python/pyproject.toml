@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = [
   { name="Omg Bebebe", email="omgbebebe@gmail.com" },
 ]
-description = "MindWM Knative func exapley"
+description = "MindWM Knative func example"
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [

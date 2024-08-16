@@ -2,8 +2,7 @@
   description = "A MindWM knfunc for event processing";
 
   inputs = {
-    #nixpkgs.url = "github:nixos/nixpkgs/24.05";
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:nixos/nixpkgs/24.05";
     flake-parts.url = "github:hercules-ci/flake-parts";
     mindwm-sdk-python.url = "github:mindwm/mindwm-sdk-python-ng";
     mindwm-sdk-python.inputs.nixpkgs.follows = "nixpkgs";
@@ -19,9 +18,9 @@
       systems = [ "x86_64-linux" "aarch64-linux" ];
       perSystem = { config, self', inputs', pkgs, system, ... }:
       let
-        my_python = pkgs.python3.withPackages (ps: with ps; [
+        my_python = (pkgs.python3.withPackages (ps: with ps; [
           mindwm-sdk-python.packages.${system}.default
-        ]);
+        ]));
         project = pkgs.callPackage ./package.nix {
           my_python = my_python;
         };
@@ -30,6 +29,12 @@
           config = {
             cmd = [ "${project}/bin/mindwm-knfunc" ];
           };
+          contents = with pkgs; [
+            bashInteractive
+            coreutils less
+            gnugrep ripgrep gnused gawk
+            dig iproute2 curl
+          ];
         };
       in { 
         packages.default = project;
@@ -81,7 +86,7 @@
               command = "set -a && source .env.sample && set +a";
             }
             { help = "run test_func";
-              name = "test";
+              name = "test_func";
               command = "python ./src/knfunc/test_func.py";
             }
             ];
